@@ -1,11 +1,17 @@
 const path = require('path');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/js/app.js', //エントリーポイントの設定
+  // エントリーポイントの設定
+  entry: {
+    'js/bundle.js':'./src/js/app.js',
+  },
   output: {
-    filename: 'bundle.js', //出力ファイル名
-    path: path.resolve(__dirname, 'public/js')
+    filename: '[name]', //出力ファイル名
+    path: path.resolve(__dirname, 'public')
   },
   module: {
     rules: [
@@ -27,11 +33,25 @@ module.exports = {
         // 対象となるディレクトリ
         include: path.resolve(__dirname, 'src/scss'),
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
-          'sass-loader'
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+            },
+          },
         ],
       }
     ]
-  }
+  },
+  plugins: [
+    new CleanWebpackPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '/css/style.css',
+    }),
+    new webpack.ProvidePlugin({
+      $: 'jquery'
+    })
+  ]
 }
