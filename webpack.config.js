@@ -1,9 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
-module.exports = {
+// const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+module.exports = ( env, argv ) => ({
   mode: 'development',
   // エントリーポイントの設定
   entry: {
@@ -12,6 +15,12 @@ module.exports = {
   output: {
     filename: '[name]', //出力ファイル名
     path: path.resolve(__dirname, 'public')
+  },
+  optimization: {
+    minimizer: [
+      new TerserPlugin({}),
+      new OptimizeCssAssetsPlugin({})
+    ]
   },
   module: {
     rules: [
@@ -36,6 +45,20 @@ module.exports = {
           MiniCssExtractPlugin.loader,
           'css-loader',
           {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true,
+              plugins: [
+                require("css-mqpacker")({
+                  sort: true
+                }),
+                require("autoprefixer")({
+                  grid: true
+                })
+              ]
+            }
+          },
+          {
             loader: 'sass-loader',
             options: {
               sourceMap: true,
@@ -46,12 +69,18 @@ module.exports = {
     ]
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    // new CleanWebpackPlugin(),
     new MiniCssExtractPlugin({
       filename: '/css/style.css',
     }),
     new webpack.ProvidePlugin({
       $: 'jquery'
     })
-  ]
-}
+  ],
+  devServer: {
+    contentBase: path.resolve(__dirname, 'public'),
+    watchContentBase: true,
+    port: 5000,
+    hot: true
+  }
+});
