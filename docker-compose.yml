@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  node:
+    build:
+      context: "."
+      dockerfile: "docker/Dockerfile"
+    container_name: webpack
+    ports:
+      - "5000:5000"
+    command: npm run start
+    volumes:
+      - .:/myapp
+      - node-modules:/myapp/node_modules
+volumes:
+  node-modules:

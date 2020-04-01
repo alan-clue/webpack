@@ -1,20 +1,14 @@
-@import './variables';
+@import './utility/reset';
+@import './utility/variables';
+@import './utility/mixins';
 
-body {
-  background-color: $primary-color;
-}
-.wrapper {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  grid-template-rows: 50px 1fr 50px;
-  @media screen and (max-width: 480px) {
-    display: block;
-  }
-}
+@import "./layout/*";
+@import "./module/*";
+@import "./parts/*";
+
 .container {
-  display: flex;
-  flex-direction: column;
-  @media screen and (max-width: 480px) {
-    display: block;
-  }
+  background: url("/images/test.jpg") no-repeat left top;
+  height: 200px;
 }
+
+@import './utility/utility';

@@ -3,8 +3,26 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const globule = require('globule');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 // const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const dir = {
+  src: path.resolve(__dirname, 'src'),
+  srcPug: path.resolve(__dirname, 'src/pug'),
+  srcSass: path.resolve(__dirname, 'src/scss'),
+  srcJs: path.resolve(__dirname, 'src/js'),
+  dist: path.resolve(__dirname, 'public')
+};
+const from = 'pug';
+const to = 'html';
+const htmlPluginConfig = globule.find([`**/*.${from}`, `!**/_*.${from}`], {cwd: dir.srcPug}).map(filename => {
+  // const file = filename.replace(new RegExp(`.${from}$`, 'i'), `.${to}`).split('/')
+  return new HtmlWebpackPlugin({
+    filename: `${dir.dist}/` + filename.replace(new RegExp(`.${from}$`, 'i'), `.${to}`).replace(/(\.\/)?pug/, '.'),
+    template: `${dir.srcPug}/${filename}`
+  })
+});
 
 module.exports = ( env, argv ) => ({
   mode: 'development',
@@ -14,7 +32,8 @@ module.exports = ( env, argv ) => ({
   },
   output: {
     filename: '[name]', //出力ファイル名
-    path: path.resolve(__dirname, 'public')
+    path: dir.dist,
+    // publicPath: '/public',
   },
   optimization: {
     minimizer: [
@@ -24,11 +43,31 @@ module.exports = ( env, argv ) => ({
   },
   module: {
     rules: [
+
+      // pug-loaderの設定
+      {
+        test: /\.pug$/,
+        use: [{
+          loader: 'pug-loader',
+          options: argv.mode !== 'production' ? {
+            pretty: true
+          } : {}
+        }]
+      },
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        include: dir.srcJs,
+        loader: "eslint-loader",
+        options: {
+            fix: true
+        }
+      },
       {
         // 対象ファイル
         test: /\.js$/,
         // 対象となるディレクトリ
-        include: path.resolve(__dirname, 'src/js'),
+        include: dir.srcJs,
         use: [{
           loader: 'babel-loader',
           options: {
@@ -40,7 +79,7 @@ module.exports = ( env, argv ) => ({
         // 対象ファイル
         test: /\.scss$/,
         // 対象となるディレクトリ
-        include: path.resolve(__dirname, 'src/scss'),
+        include: dir.srcSass,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
@@ -64,23 +103,35 @@ module.exports = ( env, argv ) => ({
               sourceMap: true,
             },
           },
+          'import-glob-loader'
         ],
       }
     ]
   },
   plugins: [
-    // new CleanWebpackPlugin(),
+    // new CleanWebpackPlugin(['dist'],{
+        // 除外するファイルやディレクトリを指定
+        //exclude: ['images']
+    //}),
     new MiniCssExtractPlugin({
-      filename: '/css/style.css',
+      filename: 'css/style.css',
     }),
     new webpack.ProvidePlugin({
       $: 'jquery'
-    })
+    }),
+    ...htmlPluginConfig
   ],
   devServer: {
-    contentBase: path.resolve(__dirname, 'public'),
+    contentBase: [dir.src,dir.dist],
+    compress: true,
     watchContentBase: true,
     port: 5000,
-    hot: true
+    inline: true,
+    host: '0.0.0.0'
+  },
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 1000
   }
+
 });

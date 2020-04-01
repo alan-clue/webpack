@@ -1,0 +1,131 @@
+@mixin border($color: #666) {
+  border-bottom: 1px solid $color;
+}
+
+@mixin box($color: #666, $width: 300px, $height: 300px) {
+  border: 1px solid $color;
+  width: $width;
+  height: $height;
+}
+
+@mixin fs($size, $base: 16) {
+  font-size: $size + px;
+  font-size: ($size / $base) + rem;
+}
+
+@mixin link-color($color) {
+  color: $color;
+  &:hover, &:active, &:focus {
+    color: lighten($color, 20%);
+  }
+}
+
+@mixin cf {
+	&:after {
+		content: "";
+		display: block;
+		clear: both;
+	}
+}
+
+// 要素を縦横中央に
+@mixin center {
+  text-align: center;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+// @mixinの定義
+@mixin mq-min($breakpoint: md) {
+  @media #{map-get($breakpoint-up, $breakpoint)} {
+    @content;
+  }
+}
+
+@mixin mq-max($breakpoint: md) {
+  @media #{map-get($breakpoint-down, $breakpoint)} {
+    @content;
+  }
+}
+@mixin orientation($direction) {
+  @if $direction ==  "pt" {
+    @media screen and (orientation: portrait) {
+      @content;
+    }
+  } @else if $direction ==  "ls" {
+    @media screen and (orientation: landscape) {
+      @content;
+    }
+  }
+}
+
+@mixin hover($flag: true){
+  @include min-screen(900px){
+    transition: .2s;
+    &:hover{
+       transition: .3s;
+       @if $flag == true{
+         opacity: .5;
+       }
+       @content
+    }
+  }
+}
+
+@mixin aspect-ratio($width, $height, $image: null) {
+  display: block;
+  width: 100%;
+  height: 0;
+  padding-top: ($height / $width) * 100%;
+  @if $image != null {
+    background: url($image) 50% 50% no-repeat;
+    background-size: cover;
+  }
+}
+
+// 三角の矢印を描画
+@mixin trianglearrow($direction: right, $size: 12, $color: $gray){
+  $set: left;
+
+  @if $direction == left {
+    $set: right;
+  } @elseif $direction == top {
+    $set: bottom;
+  } @elseif $direction == bottom {
+    $set: top;
+  } @else {
+    $set: left;
+  }
+  $size: round($size / 2);
+  width: 0;
+  height: 0;
+  border: $size + px solid transparent;
+  border-#{$set}-color: $color;
+}
+
+// 2色のグラデーションをつける
+@mixin bg-gradient($angle: 180deg, $color: #0bd, $amount: 20%) {
+  background: linear-gradient($angle, $color, adjust-hue($color, $amount)) fixed;
+}
+
+// 文字にグラデーションをつける
+@mixin gradient-text($angle: 45deg, $color: #f82, $amount: 35%) {
+  color: $color;
+  background: -webkit-linear-gradient($angle, $color, adjust-hue($color, $amount));
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  display: inline-block;
+}
+
+// 長文テキストを枠内に収める
+@mixin truncate($width: 100%) {
+  width: $width;
+  max-width: 100%;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
